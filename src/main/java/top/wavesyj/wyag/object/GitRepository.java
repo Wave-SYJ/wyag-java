@@ -1,4 +1,4 @@
-package top.wavesyj.wyag;
+package top.wavesyj.wyag.object;
 
 import org.ini4j.Profile;
 import org.ini4j.Wini;
@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public class GitRepository {
 
@@ -59,14 +60,14 @@ public class GitRepository {
         repoDirectory(repo, "refs", "tags");
         repoDirectory(repo, "refs", "heads");
 
-        try (BufferedWriter fw = new BufferedWriter(new FileWriter(repoFile(repo, "description")))) {
+        try (BufferedWriter fw = new BufferedWriter(new FileWriter(repoFile(repo, true, "description")))) {
             fw.write("Unnamed repository; edit this file 'description' to name the repository.");
             fw.newLine();
         } catch (IOException e) {
             throw new RuntimeException("IO error: " + e.getMessage());
         }
 
-        try (BufferedWriter fw = new BufferedWriter(new FileWriter(repoFile(repo, "HEAD")))) {
+        try (BufferedWriter fw = new BufferedWriter(new FileWriter(repoFile(repo, true, "HEAD")))) {
             fw.write("ref: refs/heads/master");
             fw.newLine();
         } catch (IOException e) {
@@ -74,7 +75,7 @@ public class GitRepository {
         }
 
         try {
-            repo.conf = new Wini(repoFile(repo, "config"));
+            repo.conf = new Wini(repoFile(repo, true, "config"));
             Profile.Section section = repo.conf.add("core");
             section.add("repositoryformatversion", "0");
             section.add("filemode", "false");
@@ -89,7 +90,7 @@ public class GitRepository {
         File file = new File(path).getAbsoluteFile();
         File gitDir = new File(file, ".git");
         if (gitDir.isDirectory())
-            return new GitRepository(gitDir.getPath());
+            return new GitRepository(file.getPath());
 
         String parent = file.getParent();
         if (parent == null) {
@@ -102,7 +103,7 @@ public class GitRepository {
         return findRepo(parent, required);
     }
 
-    private static void repoDirectory(GitRepository repo, String... path) {
+    public static void repoDirectory(GitRepository repo, String... path) {
         File file = new File(String.valueOf(Paths.get(repo.gitDir.getPath(), path)));
         if (file.exists()) {
             if (!file.isDirectory())
@@ -111,18 +112,20 @@ public class GitRepository {
             throw new RuntimeException(String.format("Cannot make directory %s", file.getAbsolutePath()));
     }
 
-    private static File repoFile(GitRepository repo, String... path) {
-        File file = new File(String.valueOf(Paths.get(repo.gitDir.getPath(), path)));
+    public static File repoFile(GitRepository repo, boolean createNew, String... path) {
+        repoDirectory(repo, Arrays.copyOf(path, path.length - 1));
+        File file = new File(String.valueOf(Paths.get(repo.gitDir.getPath(), path))).getAbsoluteFile();
         if (file.exists()) {
             if (!file.isFile())
                 throw new RuntimeException(String.format("%s is not a file", file.getAbsolutePath()));
-        } else {
+        } else if (createNew) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create file " + file.getAbsolutePath());
             }
-        }
+        } else
+            throw new RuntimeException(String.format("File not existed: %s", file.getAbsolutePath()));
         return file;
     }
 

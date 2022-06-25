@@ -9,7 +9,9 @@ import javax.enterprise.context.ApplicationScoped;
 @TopCommand
 @CommandLine.Command(mixinStandardHelpOptions = true,
         subcommands = {
-                InitCommand.class
+                InitCommand.class,
+                CatFileCommand.class,
+                HashObjectCommand.class
         })
 public class EntryCommand {
 }
