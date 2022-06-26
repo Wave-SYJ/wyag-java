@@ -47,6 +47,10 @@ public class KeyValueList {
         this.message = message;
     }
 
+    public byte[] getMessage() {
+        return message;
+    }
+
     private static int findIndexOf(byte[] array, byte element, int start) {
         for (int i = start; i < array.length; i++)
             if (array[i] == element)
@@ -97,5 +101,29 @@ public class KeyValueList {
         list.setMessage(Arrays.copyOfRange(raw, start, raw.length));
 
         return list;
+    }
+
+    public static byte[] serialize(KeyValueList kvl) {
+        List<Byte> res = new ArrayList<>();
+        for (Pair<String, Value> pair : kvl.list) {
+            for (byte b : pair.first.getBytes())
+                res.add(b);
+            res.add((byte) ' ');
+            byte[] object = pair.second.object;
+            for (int i = 0; i < object.length; i++) {
+                res.add(object[i]);
+                if (object[i] == (byte) '\n' && (i == object.length - 1 || object[i + 1] != (byte) '\n'))
+                    res.add((byte) ' ');
+            }
+            res.add((byte) '\n');
+        }
+        res.add((byte) '\n');
+        for (byte b : kvl.getMessage())
+            res.add(b);
+
+        byte[] bytes = new byte[res.size()];
+        for (int i = 0; i < res.size(); i++)
+            bytes[i] = res.get(i);
+        return bytes;
     }
 }
