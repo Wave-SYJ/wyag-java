@@ -61,6 +61,7 @@ public abstract class GitObject {
 
             return switch (fmt) {
                 case "blob" -> new GitBlob(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
+                case "commit" -> new GitCommit(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
                 default -> throw new RuntimeException("Unknown type %s for object %s".formatted(fmt, sha));
             };
 

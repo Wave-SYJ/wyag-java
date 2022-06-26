@@ -2,6 +2,7 @@ package top.wavesyj.wyag.command;
 
 import picocli.CommandLine;
 import top.wavesyj.wyag.object.GitBlob;
+import top.wavesyj.wyag.object.GitCommit;
 import top.wavesyj.wyag.object.GitObject;
 import top.wavesyj.wyag.object.GitRepository;
 
@@ -32,6 +33,7 @@ public class HashObjectCommand implements Runnable {
             byte[] data = is.readAllBytes();
             String sha = switch (type) {
                 case blob -> GitObject.writeObject(new GitBlob(repo, data), actuallyStore);
+                case commit -> GitObject.writeObject(new GitCommit(repo, data), actuallyStore);
                 default -> throw new RuntimeException("Unknown type %s!".formatted(type));
             };
             System.out.println(sha);

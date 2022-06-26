@@ -2,37 +2,45 @@ package top.wavesyj.wyag.util;
 
 import java.util.*;
 
-class Value {
-    byte[] object;
-
-    public Value() {
-    }
-
-    public Value(byte[] object) {
-        this.object = object;
-    }
-}
-
-class Pair<S, V> {
-    S first;
-    V second;
-
-    public Pair() {
-    }
-
-    public Pair(S first, V second) {
-        this.first = first;
-        this.second = second;
-    }
-}
-
 public class KeyValueList {
+
+    private static class Value {
+        byte[] object;
+
+        public Value() {
+        }
+
+        public Value(byte[] object) {
+            this.object = object;
+        }
+    }
+
+    private static class Pair<S, V> {
+        S first;
+        V second;
+
+        public Pair() {
+        }
+
+        public Pair(S first, V second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
 
     private final Map<String, List<Value>> map = new HashMap<>();
 
     private final List<Pair<String, Value>> list = new ArrayList<>();
 
     private byte[] message = null;
+
+    public boolean containsKey(String key) {
+        return map.containsKey(key);
+    }
+
+    public List<byte[]> get(String key) {
+        return map.get(key).stream().map(value -> value.object).toList();
+    }
 
     private void put(String key, byte[] value) {
         Value v = new Value(value);

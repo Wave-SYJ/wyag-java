@@ -11,7 +11,8 @@ import javax.enterprise.context.ApplicationScoped;
         subcommands = {
                 InitCommand.class,
                 CatFileCommand.class,
-                HashObjectCommand.class
+                HashObjectCommand.class,
+                LogCommand.class
         })
 public class EntryCommand {
 }
