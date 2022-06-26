@@ -12,7 +12,9 @@ import javax.enterprise.context.ApplicationScoped;
                 InitCommand.class,
                 CatFileCommand.class,
                 HashObjectCommand.class,
-                LogCommand.class
+                LogCommand.class,
+                CheckoutCommand.class,
+                LsTreeCommand.class
         })
 public class EntryCommand {
 }

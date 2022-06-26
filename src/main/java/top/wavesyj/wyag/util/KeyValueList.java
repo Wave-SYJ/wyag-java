@@ -2,6 +2,8 @@ package top.wavesyj.wyag.util;
 
 import java.util.*;
 
+import static top.wavesyj.wyag.util.ArrayUtils.findIndexOf;
+
 public class KeyValueList {
 
     private static class Value {
@@ -57,13 +59,6 @@ public class KeyValueList {
 
     public byte[] getMessage() {
         return message;
-    }
-
-    private static int findIndexOf(byte[] array, byte element, int start) {
-        for (int i = start; i < array.length; i++)
-            if (array[i] == element)
-                return i;
-        return -1;
     }
 
     public static KeyValueList parse(byte[] raw) {
