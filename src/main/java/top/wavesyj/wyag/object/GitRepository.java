@@ -103,13 +103,20 @@ public class GitRepository {
         return findRepo(parent, required);
     }
 
-    public static void repoDirectory(GitRepository repo, String... path) {
+    public static String repoDirectory(GitRepository repository, String... path) {
+        return repoDirectory(repository, true, path);
+    }
+
+    public static String repoDirectory(GitRepository repo, boolean mkdir, String... path) {
         File file = new File(String.valueOf(Paths.get(repo.gitDir.getPath(), path)));
         if (file.exists()) {
             if (!file.isDirectory())
                 throw new RuntimeException(String.format("%s is not a directory", file.getAbsolutePath()));
-        } else if (!file.mkdirs())
+        } else if (mkdir && !file.mkdirs())
             throw new RuntimeException(String.format("Cannot make directory %s", file.getAbsolutePath()));
+        else
+            return null;
+        return file.getAbsolutePath();
     }
 
     public static File repoFile(GitRepository repo, boolean createNew, String... path) {

@@ -14,7 +14,10 @@ import javax.enterprise.context.ApplicationScoped;
                 HashObjectCommand.class,
                 LogCommand.class,
                 CheckoutCommand.class,
-                LsTreeCommand.class
+                LsTreeCommand.class,
+                RevParseCommand.class,
+                ShowRefCommand.class,
+                TagCommand.class,
         })
 public class EntryCommand {
 }

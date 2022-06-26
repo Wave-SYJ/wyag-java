@@ -1,10 +1,14 @@
 package top.wavesyj.wyag.object;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import top.wavesyj.wyag.util.RefUtil;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -62,6 +66,8 @@ public abstract class GitObject {
             return switch (fmt) {
                 case "blob" -> new GitBlob(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
                 case "commit" -> new GitCommit(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
+                case "tag" -> new GitTag(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
+                case "tree" -> new GitTree(repo, Arrays.copyOfRange(raw, nullPos + 1, raw.length));
                 default -> throw new RuntimeException("Unknown type %s for object %s".formatted(fmt, sha));
             };
 
@@ -109,8 +115,63 @@ public abstract class GitObject {
 
     }
 
+    private static List<String> resolveObject(GitRepository repo, String name) {
+        List<String> candidates = new ArrayList<>();
+        if (name == null || "".equals(name.strip()))
+            return null;
+
+        if ("HEAD".equals(name))
+            return Collections.singletonList(RefUtil.resolveRef(repo, "HEAD"));
+        if (name.matches("^[\\dA-Fa-f]{4,40}$")) {
+            name = name.toLowerCase();
+            if (name.length() == 40)
+                return Collections.singletonList(name);
+            String prefix = name.substring(0, 2);
+            String path = GitRepository.repoDirectory(repo, false, "objects", prefix);
+            if (path != null) {
+                String rem = name.substring(2);
+                File[] files = new File(rem).listFiles();
+                if (files == null)
+                    return null;
+                for (File f : files)
+                    if (f.getName().startsWith(rem))
+                        candidates.add(prefix + f.getName());
+            }
+        }
+        return candidates;
+    }
+
+    public static String findObject(GitRepository repo, String name, String fmt, boolean follow) {
+        List<String> shas = resolveObject(repo, name);
+        if (shas == null)
+            throw new RuntimeException("No such reference %s.".formatted(name));
+        if (shas.size() > 1)
+            throw new RuntimeException("Ambiguous reference %s: Candidates are:\n - %s".formatted(
+                    name,
+                    String.join("\n - ", shas)
+            ));
+        String sha = shas.get(0);
+        if (fmt == null || "".equals(fmt))
+            return sha;
+        while (true) {
+            GitObject obj = GitObject.readObject(repo, sha);
+            if (fmt.equals(obj.getFmt()))
+                return sha;
+            if (!follow)
+                return null;
+
+
+            if (Type.tag.name().equals(obj.getFmt()))
+                sha = new String(((GitTag) obj).getList().get("object").get(0));
+            else if (Type.commit.name().equals(obj.getFmt()) && "tree".equals(fmt))
+                sha = new String(((GitTag) obj).getList().get("tree").get(0));
+            else
+                return null;
+        }
+    }
+
     public static String findObject(GitRepository repo, String name) {
-        return name;
+        return findObject(repo, name, null, true);
     }
 
 }

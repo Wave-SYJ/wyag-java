@@ -44,7 +44,7 @@ public class KeyValueList {
         return map.get(key).stream().map(value -> value.object).toList();
     }
 
-    private void put(String key, byte[] value) {
+    public void put(String key, byte[] value) {
         Value v = new Value(value);
         Pair<String, Value> pair = new Pair<>(key, v);
         list.add(pair);
